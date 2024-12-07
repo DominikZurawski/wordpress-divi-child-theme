@@ -1,0 +1,14 @@
+/*
+Theme Name: Divi Child
+Theme URI: http://example.com/
+Description: Child theme for Divi
+Author: CraneCode
+Author URI: http://example.com/
+Template: Divi
+Version: 1.0.0
+*/
+
+@import url("../Divi/style.css");
+
+/* Tutaj dodaj swoje zmiany CSS */
+
