@@ -10,7 +10,6 @@ function my_theme_enqueue_styles() {
 }
 add_action('wp_enqueue_scripts', 'my_theme_enqueue_styles');
 
-// Załaduj plik z własnymi typami postów
 require get_stylesheet_directory() . '/custom-post-types.php';
 
 function add_lightbox_assets() {

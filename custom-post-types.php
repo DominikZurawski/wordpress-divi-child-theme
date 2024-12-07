@@ -52,7 +52,7 @@ function custom_realizations_loop($atts = array()) {
         'paged' => $paged,
     );
 
-    // Dodaj filtr taksonomii, jeśli określono typ
+    // taxanomy filter
     if (!empty($atts['type'])) {
         $args['tax_query'] = array(
             array(
@@ -99,21 +99,20 @@ function custom_realizations_loop($atts = array()) {
     return ob_get_clean();
 }
 
-// Rejestracja shortcodów dla każdego typu realizacji
+// Register shortcodes
 function register_realization_shortcodes() {
     add_shortcode('custom_realizations', 'custom_realizations_loop');
 
-    // Shortcode dla schodów
+    // Shortcode for stairs
     add_shortcode('custom_realizations_stairs', function($atts) {
         return custom_realizations_loop(array('type' => 'schody'));
     });
-
-    // Shortcode dla bram
+for gates
     add_shortcode('custom_realizations_gates', function($atts) {
         return custom_realizations_loop(array('type' => 'bramy'));
     });
 
-    // Shortcode dla innych realizacji
+    // Shortcode for others
     add_shortcode('custom_realizations_other', function($atts) {
         return custom_realizations_loop(array('type' => 'pozostale-realizacje'));
     });
@@ -124,19 +123,19 @@ function display_realization_details($atts) {
     global $post;
     ob_start();
 
-    // Pobranie metadanych postu
+    // get post metadata
     $post_id = get_the_ID();
 
-    // Pobierz zdjęcia z metaboxu galerii
+    // get gallery images from metabox
     $gallery_images_string = get_post_meta($post_id, '_realizations_gallery', true);
     $gallery_images = !empty($gallery_images_string) ? explode(',', $gallery_images_string) : array();
 
-    // Pobranie treści postu i wyodrębnienie obrazków
+    // get post content and extract images
     $content = apply_filters('the_content', get_the_content());
     preg_match_all('/<img[^>]+>/i', $content, $images);
     $text_content = preg_replace('/<img[^>]+>/i', '', $content);
 
-    // Dodanie obrazka wyróżnionego jako pierwszy obrazek w galerii, jeśli istnieje
+    // add featured image as first image in gallery if exists
     if (has_post_thumbnail()) {
         $featured_image_id = get_post_thumbnail_id($post_id);
         $featured_image_url = wp_get_attachment_image_src($featured_image_id, 'large')[0];
@@ -145,24 +144,24 @@ function display_realization_details($atts) {
         }
     }
 
-    // Wyświetlanie treści postu
+    // display post content
     if (is_singular('realizations')) {
         echo '<div class="realization-details">';
 
-        // Tytuł postu
+        // post title
         echo '<h1 class="realization-title">' . get_the_title() . '</h1>';
 
-        // Data publikacji
+        // post date
         echo '<div class="realization-date">' . get_the_date() . '</div>';
 
-        // Opis postu w ramce
+        // post content in box
         echo '<div class="realization-content-box"><div class="realization-content">' . $text_content . '</div></div>';
 
-        // Galeria zdjęć
+        // gallery
         if (!empty($gallery_images) || !empty($images[0])) {
             echo '<div class="realization-gallery">';
 
-            // Wyświetl zdjęcia z metaboxu galerii
+            // display gallery images
             foreach ($gallery_images as $image_id) {
                 $image_full = wp_get_attachment_image_src($image_id, 'large');
                 $image_thumb = wp_get_attachment_image_src($image_id, 'medium');
@@ -173,7 +172,7 @@ function display_realization_details($atts) {
                 }
             }
 
-            // Wyświetl zdjęcia z treści postu
+            // display images from post content
             foreach ($images[0] as $image) {
                 if (preg_match('/src="([^"]+)"/', $image, $match)) {
                     $image_url = $match[1];
@@ -221,7 +220,7 @@ function create_realizations_taxonomy() {
 
     register_taxonomy('realization_type', array('realizations'), $args);
 
-    // Dodanie terminów do taksonomii z własnymi slugami
+    // add terms to taxonomy with custom slugs
     if (!term_exists('Schody', 'realization_type')) {
         wp_insert_term(
             'Schody',
@@ -246,18 +245,18 @@ function create_realizations_taxonomy() {
 }
 add_action('init', 'create_realizations_taxonomy');
 
-// Dodaj niestandardowe reguły przepisywania URL
+// add custom rewrite rules
 function custom_taxonomy_rewrite_rules($rules) {
     $new_rules = array();
 
-    // Dodaj regułę dla pojedynczych terminów
+    // add rule for single terms
     $new_rules['(schody|bramy|pozostale-realizacje)/?$'] = 'index.php?realization_type=$matches[1]';
 
     return $new_rules + $rules;
 }
 add_filter('rewrite_rules_array', 'custom_taxonomy_rewrite_rules');
 
-// Dodaj filtr dla linków termów
+// add filter for term links
 function custom_term_link($url, $term, $taxonomy) {
     if ($taxonomy === 'realization_type') {
         return home_url('/' . $term->slug . '/');
@@ -266,7 +265,7 @@ function custom_term_link($url, $term, $taxonomy) {
 }
 add_filter('term_link', 'custom_term_link', 10, 3);
 
-// Wyczyść reguły przepisywania URL po aktywacji
+// flush rewrite rules on activation
 function flush_rewrite_rules_on_activation() {
     create_realizations_taxonomy();
     flush_rewrite_rules();
@@ -284,7 +283,7 @@ function remove_project_from_admin_bar() {
 }
 add_action('admin_bar_menu', 'remove_project_from_admin_bar', 999);
 
-// Metabox Galeria zdjęć dla Realizacji
+// Metabox Gallery for Realizations
 function add_realizations_gallery_metabox() {
     add_meta_box(
         'realizations_gallery',
@@ -327,7 +326,7 @@ function realizations_gallery_callback($post) {
     <?php
 }
 
-// Zapisywanie danych galerii
+// save gallery data
 function save_realizations_gallery($post_id) {
     if (!isset($_POST['realizations_gallery_nonce']) || !wp_verify_nonce($_POST['realizations_gallery_nonce'], 'save_realizations_gallery')) {
         return;
@@ -343,17 +342,17 @@ function save_realizations_gallery($post_id) {
 }
 add_action('save_post', 'save_realizations_gallery');
 
-// Dodanie skryptów i stylów
+// add scripts and styles
 function enqueue_realizations_gallery_scripts($hook) {
     global $post;
     if (($hook == 'post-new.php' || $hook == 'post.php') && $post->post_type === 'realizations') {
-        // Załaduj media uploader
+        // load media uploader
         wp_enqueue_media();
 
-        // Załaduj jQuery UI Sortable
+        // load jQuery UI Sortable
         wp_enqueue_script('jquery-ui-sortable');
 
-        // Załaduj skrypt galerii
+        // load gallery script
         wp_enqueue_script(
             'realizations-gallery-script',
             get_stylesheet_directory_uri() . '/assets/js/gallery.js', // Zmieniona ścieżka
@@ -362,7 +361,7 @@ function enqueue_realizations_gallery_scripts($hook) {
             true
         );
 
-        // Załaduj style galerii
+        // load gallery style
         wp_enqueue_style(
             'realizations-gallery-style',
             get_stylesheet_directory_uri() . '/assets/css/image-gallery.css', // Zmieniona ścieżka
@@ -370,7 +369,7 @@ function enqueue_realizations_gallery_scripts($hook) {
             filemtime(get_stylesheet_directory() . '/assets/css/image-gallery.css') // Dodany timestamp jako wersja
         );
 
-        // Dodaj lokalizację dla skryptu
+        // add localization for gallery script
         wp_localize_script(
             'realizations-gallery-script',
             'realizationsGallery',
